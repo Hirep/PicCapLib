@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -50,6 +51,41 @@ namespace PicCapLib
 
     public static class PictureOfDay
     {
+        ///<summary>
+        ///Ensures that directories for images exist
+        ///</summary>
+        static public void makeDir()
+        {
+            StringBuilder nasa = new StringBuilder(Directory.GetCurrentDirectory() + @"\APOD");
+            StringBuilder bing = new StringBuilder(Directory.GetCurrentDirectory() + @"\Bing");
+            if (!Directory.Exists(nasa.ToString()))
+            {
+                DirectoryInfo nasaDir = Directory.CreateDirectory(nasa.ToString());
+            }
+            if (!Directory.Exists(bing.ToString()))
+            {
+                DirectoryInfo bingDir = Directory.CreateDirectory(bing.ToString());
+            }
+        }
+
+        ///<summary>
+        ///Checks images to prevent duplications.
+        ///Returns "true" if daily image exists
+        ///</summary>
+        static public bool ExistImg()
+        {
+            DateTime today = DateTime.Today;
+            StringBuilder nasa = new StringBuilder(Directory.GetCurrentDirectory() + @"\APOD\NASA-" + today.ToString("dd-MM-yyyy") + ".jpg");
+            StringBuilder bing = new StringBuilder(Directory.GetCurrentDirectory() + @"\Bing\BING-" + today.ToString("dd-MM-yyyy") + ".jpg");
+            var imgList = Directory.GetFiles(Directory.GetCurrentDirectory(), "*.jpg", SearchOption.AllDirectories);
+            foreach (var item in imgList)
+            {
+                if (item == nasa.ToString() || item == bing.ToString())
+                    return true;
+            }
+            return false;
+        }
+
         static public void get_NASA_APOD()
         {
             WebClient webClient = new WebClient();
@@ -60,9 +96,16 @@ namespace PicCapLib
             ImageSource imgSrc = new ImageSource(page, matchStart, matchEnd);
             String link = "http://apod.nasa.gov/apod/image" + imgSrc.getImageSource();
             DateTime today = DateTime.Today;
-            var name = @"C:\Users\Dima\Dropbox\PC-Notebook\misc\Background\APOD\" + today.ToString("dd-MM-yyyy") + ".jpg";
+            var name = Directory.GetCurrentDirectory() + "\\APOD\\NASA-" + today.ToString("dd-MM-yyyy") + ".jpg";
 
-            webClient.DownloadFile(link, name);
+            try
+            {
+                webClient.DownloadFile(link, name);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
 
         static public void get_Bing_Img()
@@ -75,9 +118,18 @@ namespace PicCapLib
             ImageSource imgSrc = new ImageSource(page, matchStart, matchEnd);
             String link = "http://www.bing.com" + imgSrc.getImageSource();
             DateTime today = DateTime.Today;
-            var name = @"C:\Users\Dima\Dropbox\PC-Notebook\misc\Background\Bing\" + today.ToString("dd-MM-yyyy")+".jpg";
+            var name = Directory.GetCurrentDirectory() + "\\Bing\\BING-" + today.ToString("dd-MM-yyyy")+".jpg";
 
-            webClient.DownloadFile(link, name);
+            try
+            {
+                webClient.DownloadFile(link, name);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
+
+        
     }
 }
